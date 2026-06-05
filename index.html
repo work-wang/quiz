@@ -3,7 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>-三分钟自测您的门店卡在哪里-</title>
+    <title>3分钟速测美业门店卡点</title>
+    <!-- Open Graph / 分享预览配置（使用 workspace 下的 cover.png 作为默认分享图） -->
+    <meta property="og:title" content="3分钟速测美业门店卡点">
+    <meta property="og:description" content="快速诊断门店经营卡点，给出门店类型与改进引导。">
+    <meta property="og:image" content="cover.png">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="3分钟速测美业门店卡点">
+    <meta name="twitter:description" content="快速诊断门店经营卡点，给出门店类型与改进引导。">
+    <meta name="twitter:image" content="cover.png">
     <style>
         * {
             margin: 0;
@@ -479,7 +488,7 @@
 <!-- 群聊二维码弹窗 -->
 <div id="qrModal" class="modal">
     <div class="modal-content">
-        <div class="modal-title">美业增长交流群</div>
+        <div class="modal-title">GSBL（玑丽提）运动护肤训练营</div>
         <div class="modal-sub">扫码加入，获取活动模板 / 诊断答疑</div>
         <img id="groupQrImage" src="code.jpg" alt="群二维码">
         <div style="font-size:12px; margin-top:6px; color:#6b7280;">在微信内请点击右上角“···”菜单，选择“发送给朋友”或“复制链接”，完成分享后可扫码加入群聊。</div>
@@ -893,14 +902,12 @@
             <div class="page-card">
                 <div class="page-header">诊断结果</div>
                 <div class="page-body">
-                    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-                        <div style="flex:1">
-                            <div style="font-size:0.95rem;color:#6b8f6b;font-weight:700;">总分</div>
-                            <div style="font-size:2rem;font-weight:900;color:#2e7d32;margin-top:6px;">${score} 分</div>
-                            <div style="margin-top:8px;font-size:1.05rem;font-weight:800;color:#244e24;">${storeType}</div>
-                        </div>
-                        <div style="min-width:120px;text-align:right;"></div>
-                    </div>
+                            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                                <div style="flex:1">
+                                    <div style="font-size:1.6rem;font-weight:900;color:#2e7d32;margin-top:6px;">${storeType}</div>
+                                </div>
+                                <div style="min-width:120px;text-align:right;"></div>
+                            </div>
                     <div style="margin-top:16px;padding-top:8px;">
                         <div style="margin:12px 0"><strong>核心问题</strong><div style="margin-top:6px;color:#334d36;">${info.core}</div></div>
                         <div style="margin:12px 0"><strong>深层卡点</strong><div style="margin-top:6px;color:#334d36;">${info.deep}</div></div>
@@ -925,7 +932,9 @@
     // 分享并在分享完成后显示群二维码（优先使用 Web Share API）
     function shareDiagnosis() {
         const url = window.location.href;
-        const shareData = { title: document.title, text: '我刚做了门店增长力测试，分享给你参考：', url };
+        // 使用固定分享文案与标题，方便微信/系统分享预览
+        const shareText = '3分钟速测美业门店卡点';
+        const shareData = { title: shareText, text: shareText, url };
         // 若支持原生分享 API
         if (navigator.share) {
             navigator.share(shareData).then(()=>{
