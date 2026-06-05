@@ -3,13 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>3分钟速测美业门店卡点-1</title>
-    <!-- 微信分享卡片 100% 显示 -->
+    <title>3分钟速测美业门店卡点</title>
+    <!-- Open Graph / 分享预览配置 — 使用 GitHub Pages 的绝对 URL（带版本号以便刷新缓存） -->
     <meta property="og:title" content="3分钟速测美业门店卡点">
     <meta property="og:description" content="快速诊断门店经营卡点，给出门店类型与改进引导。">
-    <meta property="og:image" content="https://wangjie-r.github.io/quiz/cover.png">
+    <meta property="og:url" content="https://work-wang.github.io/quiz/">
+    <meta property="og:image" content="https://work-wang.github.io/quiz/cover.png?v=20260605">
+    <meta property="og:image:secure_url" content="https://work-wang.github.io/quiz/cover.png?v=20260605">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <link rel="image_src" href="https://work-wang.github.io/quiz/cover.png?v=20260605">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://wangjie-r.github.io/quiz/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="3分钟速测美业门店卡点">
+    <meta name="twitter:description" content="快速诊断门店经营卡点，给出门店类型与改进引导。">
+    <meta name="twitter:image" content="https://work-wang.github.io/quiz/cover.png?v=20260605">
     <style>
         * {
             margin: 0;
@@ -540,7 +548,7 @@
         antiAging: null,
         willingDiagnosis: null,
     };
-    let qAnswers = {}; //
+    let qAnswers = {}; // q1~q18 存储选项完整文本 (例如 "A. ...")
 
     let currentPage = 0;
     let pagesData = [];
@@ -554,7 +562,7 @@
             title: "身份验证",
             questions: [{
                 id: "identity",
-                text: "您属于以下哪种身份？-1",
+                text: "您属于以下哪种身份？",
                 type: "radio",
                 options: ["A. 正在营业的美业同行", "B. 准备入行的行业小白"],
                 required: true
