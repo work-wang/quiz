@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>三分钟自测您的门店卡在哪里</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(160deg, #eef5ea 0%, #e2f0db 40%, #ecf5e8 100%);
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
+            padding: 24px 16px 60px;
+            color: #1e2a3e;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -120px;
+            right: -80px;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(76,175,80,0.07) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -100px;
+            left: -60px;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(76,175,80,0.05) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 进度条区域 */
+        .progress-area {
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 40px;
+            padding: 14px 22px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 16px rgba(46,125,50,0.06), 0 1px 3px rgba(0,0,0,0.04);
+            border: 1px solid rgba(212,226,201,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            position: sticky;
+            top: 12px;
+            z-index: 100;
+        }
+        .progress-text {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #2e7d32;
+            background: linear-gradient(135deg, #e8f3e2, #d4ecd0);
+            padding: 6px 16px;
+            border-radius: 30px;
+            white-space: nowrap;
+            letter-spacing: 0.3px;
+        }
+        .progress-bar-wrap {
+            flex: 1;
+            background: #e2ecd9;
+            border-radius: 20px;
+            height: 10px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #66bb6a, #4caf50, #43a047);
+            width: 0%;
+            height: 100%;
+            border-radius: 20px;
+            transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .progress-bar-fill::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35));
+            border-radius: 20px;
+        }
+
+        /* 卡片分页 */
+        .page-card {
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 8px 32px rgba(46,125,50,0.06), 0 2px 6px rgba(0,0,0,0.02);
+            border: 1px solid rgba(212,226,201,0.7);
+            overflow: hidden;
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+            animation: cardFadeIn 0.4s ease;
+        }
+        @keyframes cardFadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .page-header {
+            padding: 22px 24px 14px;
+            border-bottom: 1px solid #e2efda;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: #2e5c2e;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .page-header::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(180deg, #66bb6a, #4caf50);
+            border-radius: 2px;
+        }
+        .page-body {
+            padding: 24px;
+        }
+        .question-group {
+            margin-bottom: 30px;
+            padding-bottom: 4px;
+        }
+        .question-group:last-child {
+            margin-bottom: 0;
+        }
+        .question-text {
+            font-weight: 700;
+            margin-bottom: 14px;
+            font-size: 0.98rem;
+            color: #1e3a2f;
+            line-height: 1.5;
+        }
+        .options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .option-radio, .option-checkbox {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #f9fdf7;
+            padding: 10px 20px;
+            border-radius: 60px;
+            border: 1.5px solid #dae8cf;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+        }
+        .option-radio:hover, .option-checkbox:hover {
+            background: #f0f8ec;
+            border-color: #a5d6a7;
+            box-shadow: 0 2px 8px rgba(76,175,80,0.08);
+            transform: translateY(-1px);
+        }
+        .option-radio:active, .option-checkbox:active {
+            transform: scale(0.97);
+        }
+        .option-radio.selected, .option-checkbox.selected {
+            background: linear-gradient(135deg, #e6f4e0, #d4edc9);
+            border-color: #4caf50;
+            box-shadow: 0 2px 12px rgba(76,175,80,0.18);
+        }
+        .option-radio input, .option-checkbox input {
+            margin: 0;
+            accent-color: #4caf50;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .option-radio label, .option-checkbox label {
+            font-size: 0.87rem;
+            font-weight: 500;
+            color: #2c4b2c;
+            cursor: pointer;
+            line-height: 1.4;
+        }
+        .btn-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            margin-top: 28px;
+        }
+        .btn-prev, .btn-next, .btn-submit-final {
+            flex: 1;
+            background: #f2f7ef;
+            border: 1.5px solid #d4e5cc;
+            padding: 15px 20px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 0.98rem;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #2c5e2c;
+            letter-spacing: 0.3px;
+        }
+        .btn-prev:hover {
+            background: #e8f2e2;
+            border-color: #a5d6a7;
+            box-shadow: 0 3px 10px rgba(76,175,80,0.08);
+        }
+        .btn-next, .btn-submit-final {
+            background: linear-gradient(135deg, #56c568, #4caf50);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 16px rgba(76,175,80,0.28);
+        }
+        .btn-next:hover, .btn-submit-final:hover {
+            box-shadow: 0 6px 22px rgba(76,175,80,0.38);
+            transform: translateY(-1px);
+        }
+        .btn-prev:active, .btn-next:active, .btn-submit-final:active {
+            transform: scale(0.97);
+            transition: transform 0.1s;
+        }
+        .warning-msg {
+            color: #d32f2f;
+            font-size: 0.78rem;
+            margin-top: 10px;
+            display: none;
+            padding-left: 4px;
+            font-weight: 500;
+            animation: shake 0.4s ease;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25%  { transform: translateX(-4px); }
+            75%  { transform: translateX(4px); }
+        }
+        .result-card {
+            background: white;
+            border-radius: 28px;
+            padding: 28px 24px;
+            margin-top: 24px;
+            border-left: 6px solid #4caf50;
+            box-shadow: 0 8px 32px rgba(46,125,50,0.08), 0 2px 6px rgba(0,0,0,0.02);
+            animation: resultSlideUp 0.5s ease;
+            line-height: 1.7;
+        }
+        @keyframes resultSlideUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .result-card .result-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #e8f3e2, #d4ecd0);
+            color: #2e7d32;
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.82rem;
+            margin-bottom: 14px;
+            letter-spacing: 0.3px;
+        }
+        .result-card .result-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #2e7d32;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+        .result-card .result-score {
+            display: inline-block;
+            background: linear-gradient(135deg, #eef5ea, #e2f0db);
+            color: #2e5c2e;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+        }
+        .consult-btn, .share-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #2c5e2c, #3a7a3a);
+            color: white;
+            padding: 12px 26px;
+            border-radius: 40px;
+            font-weight: 700;
+            margin-top: 14px;
+            margin-right: 14px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(44,94,44,0.25);
+            transition: all 0.25s ease;
+            letter-spacing: 0.3px;
+        }
+        .consult-btn:hover, .share-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(44,94,44,0.35);
+        }
+        .share-btn {
+            background: linear-gradient(135deg, #5d8c5a, #6da16a);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.45);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(6px);
+            animation: modalFadeIn 0.25s ease;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+        .modal-content {
+            background: white;
+            border-radius: 32px;
+            max-width: 340px;
+            width: 88%;
+            text-align: center;
+            padding: 32px 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            animation: modalSlideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes modalSlideUp {
+            from { opacity: 0; transform: translateY(40px) scale(0.92); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .modal-content img {
+            width: 170px;
+            height: 170px;
+            margin: 14px auto;
+            border-radius: 20px;
+            object-fit: contain;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+        }
+        .modal-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #2e5c2e;
+            margin-bottom: 6px;
+        }
+        .modal-sub {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+        .close-modal {
+            background: linear-gradient(135deg, #56c568, #4caf50);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 60px;
+            margin-top: 22px;
+            width: 85%;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 14px rgba(76,175,80,0.25);
+            transition: all 0.25s ease;
+            letter-spacing: 0.3px;
+        }
+        .close-modal:hover {
+            box-shadow: 0 6px 20px rgba(76,175,80,0.35);
+            transform: translateY(-1px);
+        }
+        .close-modal:active {
+            transform: scale(0.97);
+        }
+        footer {
+            text-align: center;
+            margin-top: 36px;
+            font-size: 0.72rem;
+            color: #8ba88a;
+            letter-spacing: 0.5px;
+            padding-bottom: 8px;
+        }
+        .toast-msg {
+            position: fixed;
+            bottom: 36px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(44,94,44,0.9);
+            backdrop-filter: blur(12px);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            z-index: 3000;
+            pointer-events: none;
+            box-shadow: 0 8px 24px rgba(44,94,44,0.3);
+            animation: toastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            letter-spacing: 0.3px;
+        }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(16px); }
+            to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        @media (max-width: 550px) {
+            body {
+                padding: 16px 12px 50px;
+            }
+            .progress-area {
+                padding: 12px 16px;
+                border-radius: 36px;
+            }
+            .page-card {
+                border-radius: 24px;
+            }
+            .page-header {
+                padding: 18px 18px 10px;
+                font-size: 1.1rem;
+            }
+            .page-body {
+                padding: 18px;
+            }
+            .option-radio, .option-checkbox {
+                padding: 8px 16px;
+                font-size: 0.84rem;
+            }
+            .btn-prev, .btn-next, .btn-submit-final {
+                padding: 13px 16px;
+                font-size: 0.9rem;
+            }
+            .result-card {
+                padding: 22px 18px;
+                border-radius: 24px;
+                border-left-width: 5px;
+            }
+            .modal-content {
+                padding: 26px 18px;
+                border-radius: 28px;
+            }
+        }
+        .hidden-page {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="progress-area" id="progressArea">
+        <span class="progress-text" id="progressPercent">0%</span>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressFill"></div></div>
+    </div>
+
+    <div id="pagesContainer"></div>
+    <div id="resultArea"></div>
+    <footer>© 新美业增长实验室 · 精准诊断门店卡点</footer>
+</div>
+
+<!-- 群聊二维码弹窗 -->
+<div id="qrModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-title">美业增长交流群</div>
+        <div class="modal-sub">扫码加入，获取活动模板 / 诊断答疑</div>
+        <img id="groupQrImage" src="code.jpg" alt="群二维码">
+        <div style="font-size:12px; margin-top:6px; color:#6b7280;">在微信内请点击右上角“···”菜单，选择“发送给朋友”或“复制链接”，完成分享后可扫码加入群聊。</div>
+        <button class="close-modal" id="closeModalBtn">关闭</button>
+    </div>
+</div>
+
+<!-- 分享确认弹窗（降级方案） -->
+<div id="shareConfirmModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-title">分享说明</div>
+        <div class="modal-sub">请先将本诊断报告分享给至少一位同行，完成后可查看入群二维码。</div>
+        <div style="font-size:13px; text-align:left; margin-top:12px;">分享方式：</div>
+        <ol style="text-align:left; font-size:13px; margin:6px 0 0 18px;">
+            <li>若在微信内打开，请点击右上角“···”或菜单，选择“发送给朋友”或“复制链接”，把链接发送给至少一位同行；</li>
+            <li>若浏览器支持系统分享（推荐），也可直接使用系统分享完成动作；</li>
+            <li>无法使用系统分享时，请复制链接并通过微信/朋友圈/私信分享给朋友，然后点击“我已分享”。</li>
+        </ol>
+        <button class="close-modal" id="shareCopiedBtn" style="background:#5d8c5a;">复制链接并分享</button>
+        <button class="close-modal" id="confirmSharedBtn" style="background:#4caf50; margin-top:12px;">我已分享，查看二维码</button>
+        <button class="close-modal" id="cancelShareBtn" style="background:#9e9e9e; margin-top:12px;">取消</button>
+    </div>
+</div>
+<script>
+    // ----- 分值映射 (仅Q1-Q17) -----
+    const scoreMap = {
+        1: { "A":4, "B":3, "C":2, "D":1, "E":0 },
+        2: { "A":0, "B":1, "C":2, "D":2, "E":3 },
+        3: { "A":4, "B":3, "C":2, "D":0, "E":3 },
+        4: { "A":3, "B":6, "C":9, "D":11 },
+        5: { "A":13, "B":9, "C":6, "D":0 },
+        6: { "A":8, "B":3, "C":6, "D":0 },
+        7: { "A":8, "B":3, "C":6, "D":0 },
+        8: { "A":8, "B":3, "C":6, "D":0 },
+        9: { "A":11, "B":6, "C":9, "D":0 },
+        10: { "A":13, "B":9, "C":6, "D":0 },
+        11: { "A":11, "B":8, "C":5, "D":0 },
+        12: { "A":5, "B":8, "C":11, "D":8, "E":13 },
+        13: { "A":11, "B":8, "C":5, "D":0 },
+        14: { "A":13, "B":9, "C":6, "D":0 },
+        15: { "A":11, "B":8, "C":5, "D":0 },
+        16: { "A":13, "B":9, "C":6, "D":0 },
+        17: { "A":24, "B":18, "C":12, "D":21, "E":9 }
+    };
+
+    // 存储答案
+    let answers = {
+        identity: null,     // 'A' 或 'B'
+        shopType: null,
+        dailyTraffic: null,
+        mainProjects: [],   // 多选数组
+        antiAging: null,
+        willingDiagnosis: null,
+    };
+    let qAnswers = {}; // q1~q18 存储选项完整文本 (例如 "A. ...")
+
+    let currentPage = 0;
+    let pagesData = [];
+    let isBeginner = false;      // 是否为小白 (选B)
+    let beginnerJumpDone = false; // 防止重复跳转
+
+    // 构建页面
+    function buildPages() {
+        // 第0页: 身份筛选题
+        pagesData.push({
+            title: "身份验证",
+            questions: [{
+                id: "identity",
+                text: "您属于以下哪种身份？",
+                type: "radio",
+                options: ["A. 正在营业的美业同行", "B. 准备入行的行业小白"],
+                required: true
+            }]
+        });
+        // 模块一 Q1-3
+        pagesData.push({ title: "模块一：基础经营体感", questions: [
+            { id: "q1", text: "Q1. 您门店日常到店客流的整体体感是？", type: "radio", options: ["A. 客流极少，门店偏冷清","B. 客流偏少，日常没什么人气","C. 客流中等，平平无奇无增量","D. 客流偏多，基础人气充足","E. 客流充足，门店日常热闹"], required: true },
+            { id: "q2", text: "Q2. 您门店目前最稳定的客户来源是？", type: "radio", options: ["A. 老客转介绍为主","B. 朋友圈/微信私域老客为主","C. 抖音/小红书/视频号线上引流","D. 美团/大众点评等本地生活平台","E. 无任何稳定获客渠道，客源全靠随缘"], required: true },
+            { id: "q3", text: "Q3. 门店每月新增新客的整体体感是？", type: "radio", options: ["A. 新客极少，几乎没有新增","B. 新客偏少，增量特别有限","C. 新客数量中等，很难突破上限","D. 新客较多，增量状态不错","E. 从未关注统计，完全不清楚新客情况"], required: true }
+        ]});
+        // 模块二 Q4-5
+        pagesData.push({ title: "模块二：新客入口能力", questions: [
+            { id: "q4", text: "Q4. 门店的低门槛体验引流项目，经营体感如何？", type: "radio", options: ["A. 有体验项目，但顾客参与意愿低","B. 有体验项目，引流效果平平","C. 有体验项目，很难沉淀有效客户","D. 没有适配门店的低门槛体验引流项目"], required: true },
+            { id: "q5", text: "Q5. 新客首次到店体验后，留存转化的整体状态是？", type: "radio", options: ["A. 很难主动留存，体验完基本就流失","B. 转化一般，必须员工强力推销才有可能成交","C. 转化不稳定，全凭顾客心情","D. 转化顺畅，新客留存意愿高"], required: true }
+        ]});
+        // 模块三 Q6-8
+        pagesData.push({ title: "模块三：老客复购能力", questions: [
+            { id: "q6", text: "Q6. 近3个月门店老客回店消费的整体状态是？", type: "radio", options: ["A. 回店很不稳定，明显下滑","B. 回店状态一般，活跃度大不如前","C. 大量老客沉睡，极少主动回店","D. 老客回店稳定，状态良好"], required: true },
+            { id: "q7", text: "Q7. 门店针对沉睡老客，是否有专属激活方式、效果如何？", type: "radio", options: ["A. 没有任何老客激活方法，放任流失","B. 偶尔做激活动作，完全没有固定体系","C. 有激活动作，但效果很不理想","D. 有成熟激活方式，老客回流状态不错"], required: true },
+            { id: "q8", text: "Q8. 门店月卡、季卡、年卡等复购体系的经营状态是？", type: "radio", options: ["A. 无系统化复购卡项体系","B. 有卡项，但员工不会主动推广","C. 有卡项，但顾客续费意愿低迷","D. 卡项体系成熟，复购续费稳定"], required: true }
+        ]});
+        // 模块四 Q9-10
+        pagesData.push({ title: "模块四：项目更新能力", questions: [
+            { id: "q9", text: "Q9. 门店现有项目的新鲜感、竞争力体感是？", type: "radio", options: ["A. 项目明显老化，老客兴趣大幅降低","B. 项目新鲜感不足，顾客体验感平平","C. 项目杂乱繁多，没有清晰主推方向","D. 项目新颖有竞争力，顾客认可度高"], required: true },
+            { id: "q10", text: "Q10. 顾客对门店现有项目的价值感知整体是？", type: "radio", options: ["A. 觉得项目同质化严重，随处都有","B. 觉得性价比低，经常挑剔价格、质疑价值","C. 觉得中规中矩，没有记忆点","D. 认可项目价值，体验满意度高"], required: true }
+        ]});
+        // 模块五 Q11-12
+        pagesData.push({ title: "模块五：高客单转化能力", questions: [
+            { id: "q11", text: "Q11. 门店抗衰、高端高客单项目的成交体感是？", type: "radio", options: ["A. 有高客单项目，但顾客体验后不愿买单","B. 有高客单项目，成交越来越吃力","C. 正在筹备引进高客单抗衰项目","D. 高客单项目成交顺畅、认可度高"], required: true },
+            { id: "q12", text: "Q12. 门店高客单项目难以成交的核心体感阻力是？", type: "radio", options: ["A. 顾客主观觉得定价偏高，不愿消费","B. 项目效果感知不清晰，顾客没有消费动力","C. 顾客不信任项目效果，顾虑较多","D. 员工不会铺垫引导，成交话术缺失","E. 从未复盘，不清楚核心问题"], required: true }
+        ]});
+        // 模块六 Q13-14
+        pagesData.push({ title: "模块六：员工成交能力", questions: [
+            { id: "q13", text: "Q13. 门店员工主动邀约顾客、推广新项目的状态是？", type: "radio", options: ["A. 被动等待安排，几乎不会主动邀约推广","B. 害怕顾客拒绝，不敢主动开口","C. 需要老板紧盯督促，才会被动执行","D. 主动积极，常态化邀约推广新项目"], required: true },
+            { id: "q14", text: "Q14. 顾客体验完项目后，员工自然转卡升单的能力体感是？", type: "radio", options: ["A. 基本无法完成转卡升单","B. 只会生硬报活动价，不会自然转化","C. 偶尔能成功转卡，状态不稳定","D. 擅长自然转卡，成交转化流畅"], required: true }
+        ]});
+        // 模块七 Q15-16
+        pagesData.push({ title: "模块七：内容自营能力", questions: [
+            { id: "q15", text: "Q15. 门店朋友圈、短视频等线上内容输出状态是？", type: "radio", options: ["A. 基本不做任何内容输出","B. 想做但没有思路，不知道输出什么内容","C. 偶尔更新，没有固定节奏","D. 常态化持续输出，内容稳定"], required: true },
+            { id: "q16", text: "Q16. 门店抖音、小红书、视频号、本地团购等线上运营体感是？", type: "radio", options: ["A. 从未做过线上运营","B. 想做但没有专人负责落地","C. 尝试做过，但完全没有效果","D. 常态化运营，有稳定线上引流效果"], required: true }
+        ]});
+        // 模块八 Q17
+        pagesData.push({ title: "模块八：活动执行能力", questions: [
+            { id: "q17", text: "Q17. 门店做拓客、锁客活动时，最常见的问题是？", type: "radio", options: ["A. 没有做活动的习惯，完全不会落地","B. 活动落地后，员工执行敷衍、不到位","C. 有顾客到店，但几乎不成交消费","D. 活动没人参与，引流效果差","E. 活动做完就结束，没有后续复购留存"], required: true }
+        ]});
+        // 最后一页 Q18 (索引10)
+        pagesData.push({ title: "模块九", questions: [
+            { id: "q18", text: "Q18. 若有一套适配门店、低门槛、高复购的门店增收项目，您是否愿意深入了解？", type: "radio", options: ["A. 愿意，想尽快优化门店经营现状","B. 可以了解，想尝试突破门店瓶颈","C. 暂时观望，暂时不想调整","D. 完全不考虑"], required: true }
+        ]});
+    }
+
+    // 渲染当前页面
+    function renderPage() {
+        const container = document.getElementById('pagesContainer');
+        const page = pagesData[currentPage];
+        if (!page) return;
+        let html = `<div class="page-card"><div class="page-header">${page.title}</div><div class="page-body">`;
+        page.questions.forEach(q => {
+            let currentVal = null;
+            if (q.id.startsWith('q')) currentVal = qAnswers[q.id];
+            else currentVal = (q.type === 'checkbox') ? (answers[q.id] || []) : answers[q.id];
+            html += `<div class="question-group" data-qid="${q.id}" data-type="${q.type}"><div class="question-text">${q.text} ${q.required ? '<span style="color:#4caf50;">*</span>' : ''}</div><div class="options" id="opt-${q.id}">`;
+            q.options.forEach(opt => {
+                let isChecked = false;
+                if (q.type === 'checkbox') {
+                    isChecked = Array.isArray(currentVal) && currentVal.includes(opt);
+                } else {
+                    isChecked = (currentVal === opt);
+                }
+                const selectedClass = isChecked ? 'selected' : '';
+                if (q.type === 'radio') {
+                    html += `<div class="option-radio ${selectedClass}" data-val="${opt}"><input type="radio" name="${q.id}" value="${opt}" ${isChecked ? 'checked' : ''}><label>${opt}</label></div>`;
+                } else if (q.type === 'checkbox') {
+                    html += `<div class="option-checkbox ${selectedClass}" data-val="${opt}"><input type="checkbox" value="${opt}" ${isChecked ? 'checked' : ''}><label>${opt}</label></div>`;
+                }
+            });
+            html += `</div><div class="warning-msg" id="warn-${q.id}">请回答此题</div></div>`;
+        });
+        html += `<div class="btn-group">`;
+        // 小白逻辑：如果是小白身份，在最后一页显示“上一页”返回到筛选页；其他身份按常规上一页显示
+        const isLastPage = (currentPage === pagesData.length - 1);
+        if (!isBeginner && currentPage > 0) {
+            html += `<button class="btn-prev" id="prevBtn">◀ 上一页</button>`;
+        } else if (isBeginner && isLastPage) {
+            // 小白在最后一页时，上一页应回到第一个筛选题（索引0）
+            html += `<button class="btn-prev" id="prevBtn">◀ 上一页</button>`;
+        }
+        if (isLastPage) {
+            html += `<button class="btn-submit-final" id="submitFinalBtn">提交诊断</button>`;
+        } else {
+            html += `<button class="btn-next" id="nextBtn">下一页 ▶</button>`;
+        }
+        html += `</div></div></div>`;
+        container.innerHTML = html;
+        updateProgress();
+
+        // 绑定选项事件
+        bindOptionEvents();
+        // 绑定按钮事件
+        document.getElementById('prevBtn')?.addEventListener('click', () => {
+            if (isBeginner && currentPage === pagesData.length - 1) {
+                // 小白从最后一页返回到筛选题
+                currentPage = 0;
+                renderPage();
+                return;
+            }
+            if (currentPage > 0) { currentPage--; renderPage(); }
+        });
+        document.getElementById('nextBtn')?.addEventListener('click', () => {
+            if (!validateCurrentPage()) return;
+            // 若为小白身份且当前在第一个筛选题，点击下一页直接跳到最后一题
+            if (isBeginner && currentPage === 0) {
+                currentPage = pagesData.length - 1;
+                renderPage();
+                return;
+            }
+            if (currentPage < pagesData.length - 1) { currentPage++; renderPage(); }
+        });
+        document.getElementById('submitFinalBtn')?.addEventListener('click', () => { if (validateCurrentPage()) handleFinalSubmit(); });
+    }
+
+    function bindOptionEvents() {
+        document.querySelectorAll('.option-radio, .option-checkbox').forEach(el => {
+            const input = el.querySelector('input');
+            const qGroup = el.closest('.question-group');
+            if (!qGroup || !input) return;
+            const qid = qGroup.dataset.qid;
+            const type = qGroup.dataset.type;
+            const value = el.dataset.val;
+
+            // 允许点击整个选项框来选中（兼容 label / 文本点击）
+            el.addEventListener('click', (e) => {
+                // 如果点击的是内部 input，则交由 input 的 change 处理，避免重复触发
+                if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'input') return;
+                if (type === 'radio') {
+                    if (!input.checked) {
+                        input.checked = true;
+                        input.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                } else if (type === 'checkbox') {
+                    input.checked = !input.checked;
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            });
+
+            if (type === 'radio') {
+                input.addEventListener('change', () => {
+                    if (input.checked) {
+                        if (qid.startsWith('q')) qAnswers[qid] = value;
+                        else answers[qid] = value;
+                        // 身份特殊处理：若选中小白，只设置标记（不立即跳转），后续点击“下一页”时会跳到最后一题
+                        if (qid === 'identity' && value === 'B. 准备入行的行业小白') {
+                            isBeginner = true;
+                            beginnerJumpDone = false;
+                        } else if (qid === 'identity' && value === 'A. 正在营业的美业同行') {
+                            isBeginner = false;
+                            beginnerJumpDone = false;
+                        }
+                        // 清除警告
+                        const warnDiv = document.getElementById(`warn-${qid}`);
+                        if (warnDiv) warnDiv.style.display = 'none';
+                        // 更新高亮：移除同组 radio 的 selected，再给当前添加
+                        const group = document.querySelector(`#opt-${qid}`);
+                        if (group) {
+                            group.querySelectorAll('.option-radio').forEach(opt => opt.classList.remove('selected'));
+                            el.classList.add('selected');
+                        }
+                    }
+                });
+            } else if (type === 'checkbox') {
+                input.addEventListener('change', () => {
+                    let currentArr = answers[qid] || [];
+                    if (input.checked) {
+                        if (!currentArr.includes(value)) currentArr.push(value);
+                    } else {
+                        currentArr = currentArr.filter(v => v !== value);
+                    }
+                    answers[qid] = currentArr;
+                    const warnEl = document.getElementById(`warn-${qid}`);
+                    if (currentArr.length > 0 && warnEl) warnEl.style.display = 'none';
+                    else if (warnEl) warnEl.style.display = 'block';
+                    if (input.checked) el.classList.add('selected');
+                    else el.classList.remove('selected');
+                });
+            }
+        });
+    }
+
+    function validateCurrentPage() {
+        const page = pagesData[currentPage];
+        let valid = true;
+        for (let q of page.questions) {
+            const qid = q.id;
+            let value = null;
+            if (qid.startsWith('q')) value = qAnswers[qid];
+            else value = answers[qid];
+            if (q.type === 'checkbox') {
+                if (!value || (Array.isArray(value) && value.length === 0)) {
+                    valid = false;
+                    document.getElementById(`warn-${qid}`).style.display = 'block';
+                } else {
+                    document.getElementById(`warn-${qid}`).style.display = 'none';
+                }
+            } else {
+                if (!value) {
+                    valid = false;
+                    document.getElementById(`warn-${qid}`).style.display = 'block';
+                } else {
+                    document.getElementById(`warn-${qid}`).style.display = 'none';
+                }
+            }
+        }
+        if (!valid) alert("请完整填写当前页面所有必填项");
+        return valid;
+    }
+
+    function updateProgress() {
+        let totalRequired = 0;
+        let answeredCount = 0;
+        for (let i = 0; i < pagesData.length; i++) {
+            const page = pagesData[i];
+            for (let q of page.questions) {
+                totalRequired++;
+                const qid = q.id;
+                let val = qid.startsWith('q') ? qAnswers[qid] : answers[qid];
+                if (q.type === 'checkbox') {
+                    if (val && Array.isArray(val) && val.length > 0) answeredCount++;
+                } else if (val) answeredCount++;
+            }
+        }
+        let percent = totalRequired ? Math.min(100, Math.floor((answeredCount / totalRequired) * 100)) : 0;
+        document.getElementById('progressPercent').innerText = `${percent}%`;
+        document.getElementById('progressFill').style.width = `${percent}%`;
+    }
+
+    // 计算诊断分 (同行)
+    function computeDiagnosisScore() {
+        let total = 0;
+        for (let i = 1; i <= 17; i++) {
+            const key = `q${i}`;
+            const selected = qAnswers[key];
+            if (selected && scoreMap[i] && scoreMap[i][selected.charAt(0)]) {
+                total += scoreMap[i][selected.charAt(0)];
+            } else return null;
+        }
+        return total;
+    }
+
+    function getStoreType(score) {
+        if (score <= 4) return "增长瓶颈型";
+        if (score <= 32) return "执行薄弱型";
+        if (score <= 60) return "内容浪费型";
+        if (score <= 88) return "执行瘫痪型";
+        if (score <= 116) return "项目同质化型";
+        if (score <= 144) return "新客枯竭型";
+        if (score <= 172) return "老客空心型";
+        return "利润断层型";
+    }
+
+    function handleFinalSubmit() {
+        const identity = answers.identity;
+        if (!identity) { alert("请先选择身份"); return; }
+        // 小白路径：不生成诊断报告
+        if (isBeginner || identity === 'B. 准备入行的行业小白') {
+            // 隐藏问卷与进度，呈现独立结果页
+            document.getElementById('progressArea').style.display = 'none';
+            document.getElementById('pagesContainer').style.display = 'none';
+            const simpleHTML = `<div class="page-card"><div class="page-header">诊断结果</div><div class="page-body"><div style="font-weight:700;font-size:1.05rem;margin-bottom:10px;">感谢您的参与</div><div>您属于准备入行的行业小白，暂时不提供门店深度诊断报告。可加入交流群或查看入门资料，祝您筹店顺利。</div><div style="margin-top:14px;"><button class="share-btn" id="shareResBtnSimple">分享给同行朋友</button></div></div></div>`;
+            document.getElementById('resultArea').innerHTML = simpleHTML;
+            document.getElementById('shareResBtnSimple')?.addEventListener('click', ()=> shareDiagnosis());
+            window.scrollTo(0,0);
+            return;
+        }
+        // 同行必须完整填写Q1-Q17
+        for (let i=1;i<=17;i++) {
+            if (!qAnswers[`q${i}`]) {
+                alert("请完整回答所有经营诊断题目（Q1-Q17）");
+                return;
+            }
+        }
+        const score = computeDiagnosisScore();
+        if (score === null) { alert("题目数据缺失，请重试"); return; }
+        const storeType = getStoreType(score);
+        const q18Choice = qAnswers.q18 ? qAnswers.q18.charAt(0) : 'C';
+        const typeMap = {
+            "增长瓶颈型": {
+                "core": "您的门店无明显经营短板，各维度经营状态平稳，但业绩长期卡在固定区间，无论如何调整，无法实现增量突破。",
+                "deep": "原有经营模式已经固化，无新的增长抓手、无新的盈利突破口，陷入稳定但不增长的经营僵局。",
+                "warn": "美业市场持续迭代，原地踏步就是退步，长期无法突破增长瓶颈，会逐渐被新型门店替代，业绩逐步下滑。",
+                "guide": "建议领取专属门店增长突破诊断，挖掘门店全新增长机会。"
+            },
+            "执行薄弱型": {
+                "core": "门店经营思路、活动方案、拓客规划都能落地构思，但落地执行环节严重缺位。老板清楚门店各类经营痛点，制定的拓客、锁客、升单方案难以落地，员工消极应付、执行力不足，再好的运营规划都只停留在纸面，没办法转化成实际到店与业绩。",
+                "deep": "缺少标准化落地细则、过程管控与奖惩机制，员工缺少目标驱动力，依赖老板紧盯才被动做事，无自主执行意识，制度与活动缺少落地监督闭环。",
+                "warn": "同行依靠标准化落地持续拓客增收，本店空有方法却无法落地转化，资源白白浪费，门店长期停滞不前，客源、业绩慢慢被周边竞品瓜分，逐年增收无望。",
+                "guide": "建议领取专属门店落地执行卡点深度诊断报告，梳理团队执行力偏弱的核心诱因。"
+            },
+            "内容浪费型": {
+                "core": "您具备线上内容运营的意识和基础，愿意投入时间精力做朋友圈、短视频、本地生活，但无法将线上流量转化为到店、成交客户，流量资源严重浪费。",
+                "deep": "无内容引流转化路径、无适配线上的体验项目，不会承接公域流量，导致线上运营只涨曝光、不涨业绩。",
+                "warn": "空有运营投入、无业绩产出，长期消耗老板精力，无法发挥线上流量的增长价值，错失新美业流量红利。",
+                "guide": "建议领取专属门店内容转化卡点诊断，梳理流量变现短板。"
+            },
+            "执行瘫痪型": {
+                "core": "您清楚门店存在的经营问题，也尝试过做活动、做调整，但始终无法落地执行，员工配合度低、落地敷衍，所有经营动作都流于形式、没有结果。",
+                "deep": "门店无标准化执行SOP、无监督复盘体系，员工无执行动力、无统一落地标准，老板单人发力、团队全员躺平。",
+                "warn": "再好的经营思路、再好的项目，没有落地执行都是空谈，门店长期原地踏步，逐渐被执行力强的同行超越。",
+                "guide": "建议领取专属门店执行体系卡点诊断，梳理团队落地核心问题。"
+            },
+            "项目同质化型": {
+                "core": "您的门店项目老旧、无新鲜感，和周边同行高度雷同，顾客感知价值低、无记忆点，无法让顾客主动选择、主动复购。",
+                "deep": "无核心主推项目、项目结构杂乱，不会包装项目价值，导致门店没有核心竞争力，只能靠低价吸引客户。",
+                "warn": "无差异化的门店没有定价权，长期陷入低价内卷，利润被持续压缩，无法支撑门店长期经营和升级。",
+                "guide": "建议领取专属门店项目结构卡点诊断，梳理门店差异化短板。"
+            },
+            "新客枯竭型": {
+                "core": "您的门店没有稳定、可持续的新客获客渠道，新客增量极少，门店客流全靠老客消耗，无新鲜血液注入，增长完全停滞。",
+                "deep": "缺少适配门店的低门槛引流项目，新客到店后无成熟转化路径，无法将临时流量沉淀为门店有效客户。",
+                "warn": "老客自然流失不可逆，无新客补充会导致门店客流持续萎缩，人气越来越差，最终陷入经营僵局。",
+                "guide": "建议领取专属门店新客引流卡点诊断，梳理门店获客核心短板。"
+            },
+            "老客空心型": {
+                "core": "您的门店沉淀了一定会员资源，但大量老客处于沉睡状态，主动回店意愿差，老客活跃度持续下滑，门店缺少稳定的复购现金流支撑。",
+                "deep": "无标准化老客激活体系、无高频复购卡项体系，员工不会维护老客、不会唤醒沉睡客户，老客没有持续到店消费的核心理由。",
+                "warn": "老客是门店核心资产，长期复购低迷，仅靠零散新客支撑，门店经营极不稳定，随时会出现业绩断崖式下滑。",
+                "guide": "建议领取专属门店老客复购卡点诊断，梳理沉睡客户流失核心原因。"
+            },
+            "利润断层型": {
+                "core": "您的门店基础项目可以正常成交，但高端抗衰、高客单项目始终难以突破。门店日常看着有客流、有成交，但整体利润微薄，辛苦不赚钱，门店盈利天花板极低。",
+                "deep": "不是项目效果不足，而是缺少顾客价值感知铺垫、员工高客单成交能力薄弱，顾客对高价项目信任度不足，无法完成升单转化。",
+                "warn": "长期依赖低价基础项目盈利，无法提升客单价，在美业同质化竞争中，极易陷入价格战，最终陷入越忙越不赚钱的恶性循环。",
+                "guide": "建议领取专属门店利润卡点深度诊断报告，梳理高客单转化核心问题。"
+            }
+        };
+        const info = typeMap[storeType];
+ 
+        // 切换为独立结果页：隐藏问卷与进度，置顶显示分数与诊断内容
+        document.getElementById('progressArea').style.display = 'none';
+        document.getElementById('pagesContainer').style.display = 'none';
+        const resultHTML = `
+            <div class="page-card">
+                <div class="page-header">诊断结果</div>
+                <div class="page-body">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                        <div style="flex:1">
+                            <div style="font-size:0.95rem;color:#6b8f6b;font-weight:700;">总分</div>
+                            <div style="font-size:2rem;font-weight:900;color:#2e7d32;margin-top:6px;">${score} 分</div>
+                            <div style="margin-top:8px;font-size:1.05rem;font-weight:800;color:#244e24;">${storeType}</div>
+                        </div>
+                        <div style="min-width:120px;text-align:right;"></div>
+                    </div>
+                    <div style="margin-top:16px;padding-top:8px;">
+                        <div style="margin:12px 0"><strong>核心问题</strong><div style="margin-top:6px;color:#334d36;">${info.core}</div></div>
+                        <div style="margin:12px 0"><strong>深层卡点</strong><div style="margin-top:6px;color:#334d36;">${info.deep}</div></div>
+                        <div style="margin:12px 0"><strong>经营隐患</strong><div style="margin-top:6px;color:#334d36;">${info.warn}</div></div>
+                        <div style="margin:12px 0"><strong>下一步引导</strong><div style="margin-top:6px;color:#246131;">${info.guide}</div></div>
+                        <div style="margin-top:14px;"><button class="share-btn" id="shareResBtn">分享给同行朋友获得群聊二维码</button></div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.getElementById('resultArea').innerHTML = resultHTML;
+        document.getElementById('shareResBtn')?.addEventListener('click',()=>{ shareDiagnosis(); });
+
+        // 提示用户截图保存结果，便于后续参考
+        const saveReminder = document.createElement('div');
+        saveReminder.style.marginTop = '12px';
+        saveReminder.innerHTML = `<div style="background:#fff;padding:12px;border-radius:12px;border:1px solid #e6efe0;color:#333;">请截图保存本页面结果，便于后续查看与分享。</div>`;
+        document.getElementById('resultArea').appendChild(saveReminder);
+        window.scrollTo(0,0);
+    }
+
+    // 分享并在分享完成后显示群二维码（优先使用 Web Share API）
+    function shareDiagnosis() {
+        const url = window.location.href;
+        const shareData = { title: document.title, text: '我刚做了门店增长力测试，分享给你参考：', url };
+        // 若支持原生分享 API
+        if (navigator.share) {
+            navigator.share(shareData).then(()=>{
+                showToast('已分享，正在显示群二维码');
+                showQrModal();
+            }).catch(err=>{
+                // 用户取消或失败，降级到手动分享提示
+                openShareConfirm(url);
+            });
+            return;
+        }
+        // 不支持 navigator.share，展示手动分享确认弹窗
+        openShareConfirm(url);
+    }
+
+    function openShareConfirm(url) {
+        document.getElementById('shareConfirmModal').style.display = 'flex';
+        // 复制链接并提示用户去分享
+        document.getElementById('shareCopiedBtn').onclick = () => {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(url).then(()=>{ showToast('链接已复制，请在微信等处完成分享'); });
+            } else { prompt('请复制以下链接并分享给好友：', url); }
+        };
+        document.getElementById('confirmSharedBtn').onclick = () => {
+            document.getElementById('shareConfirmModal').style.display = 'none';
+            showToast('分享已确认，正在显示群二维码');
+            showQrModal();
+        };
+        document.getElementById('cancelShareBtn').onclick = () => { document.getElementById('shareConfirmModal').style.display = 'none'; };
+    }
+    function showToast(msg){ let t=document.createElement('div'); t.className='toast-msg'; t.innerText=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2000);}
+    function showQrModal(){ document.getElementById('qrModal').style.display='flex';}
+    function hideModal(){ document.getElementById('qrModal').style.display='none';}
+    document.getElementById('closeModalBtn')?.addEventListener('click',hideModal);
+    window.addEventListener('click',e=>{ if(e.target===document.getElementById('qrModal')) hideModal(); });
+
+    buildPages();
+    renderPage();
+</script>
+</body>
+</html>
